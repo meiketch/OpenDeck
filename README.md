@@ -29,6 +29,7 @@ Erstelle deine Karten in einer Tabellenkalkulation und exportiere sie als CSV:
 3. Klicke in OpenDeck auf **Eigenes Kartendeck per CSV importieren** oder in der Lobby auf **CSV importieren**.
 4. Vergib einen Namen, wähle die CSV-Datei von deinem Gerät aus und prüfe die Vorschau.
 5. Klicke auf **Deck speichern & aktivieren**.
+6. Importierte Decks kann der Host in der Lobby über das Papierkorb-Symbol wieder löschen (das Standarddeck bleibt erhalten).
 
 ---
 

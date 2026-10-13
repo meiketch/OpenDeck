@@ -5,7 +5,7 @@ import { GameView } from './components/GameView.tsx';
 import { PublicGameState, WhiteCard, CardPack, NetworkMessage } from './types/game.ts';
 import { GameNetwork } from './services/network.ts';
 import { HostGameEngine } from './services/gameEngine.ts';
-import { getSavedPacks, saveCustomPack } from './services/sheetsParser.ts';
+import { deleteCustomPack, getSavedPacks, saveCustomPack } from './services/sheetsParser.ts';
 
 export function App() {
   const [view, setView] = useState<'HOME' | 'GAME'>('HOME');
@@ -42,6 +42,24 @@ export function App() {
     if (engineRef.current && isHost) {
       const activePacks = updated.filter((p) => [...selectedPackIds, newPack.id].includes(p.id));
       engineRef.current.loadPacks(activePacks);
+    }
+  };
+
+  const handleDeletePack = (packId: string) => {
+    if (!isHost || packId === 'pack_default') return;
+
+    deleteCustomPack(packId);
+    const updated = getSavedPacks();
+    let newSelected = selectedPackIds.filter((id) => id !== packId);
+    if (newSelected.length === 0) {
+      newSelected = ['pack_default'];
+    }
+
+    setAvailablePacks(updated);
+    setSelectedPackIds(newSelected);
+
+    if (engineRef.current) {
+      engineRef.current.loadPacks(updated.filter((p) => newSelected.includes(p.id)));
     }
   };
 
@@ -311,6 +329,7 @@ export function App() {
         selectedPackIds={selectedPackIds}
         onTogglePack={handleTogglePack}
         onPackAdded={handlePackAdded}
+        onDeletePack={handleDeletePack}
         onUpdateSettings={handleUpdateSettings}
         onStartGame={handleStartGame}
         onLeaveRoom={handleLeaveRoom}

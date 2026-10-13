@@ -14,6 +14,7 @@ import {
   Crown,
   LogOut,
   Info,
+  Trash2,
 } from 'lucide-react';
 
 interface LobbyViewProps {
@@ -24,6 +25,7 @@ interface LobbyViewProps {
   selectedPackIds: string[];
   onTogglePack: (packId: string) => void;
   onPackAdded: (pack: CardPack) => void;
+  onDeletePack: (packId: string) => void;
   onUpdateSettings: (settings: { targetScore?: number; handSize?: number }) => void;
   onStartGame: () => void;
   onLeaveRoom: () => void;
@@ -37,6 +39,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   selectedPackIds,
   onTogglePack,
   onPackAdded,
+  onDeletePack,
   onUpdateSettings,
   onStartGame,
   onLeaveRoom,
@@ -230,14 +233,32 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       </p>
                     </div>
 
-                    <div
-                      className={`w-5 h-5 rounded-lg flex items-center justify-center border ${
-                        isSelected
-                          ? 'bg-rose-500 border-rose-500 text-white'
-                          : 'border-zinc-700 bg-zinc-900'
-                      }`}
-                    >
-                      {isSelected && <Check className="w-3.5 h-3.5" />}
+                    <div className="flex items-center gap-2">
+                      {isHost && pack.id !== 'pack_default' && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm(`Deck „${pack.name}“ wirklich löschen?`)) {
+                              onDeletePack(pack.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-950/60 transition cursor-pointer"
+                          title="Deck löschen"
+                          aria-label={`Deck ${pack.name} löschen`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      <div
+                        className={`w-5 h-5 rounded-lg flex items-center justify-center border ${
+                          isSelected
+                            ? 'bg-rose-500 border-rose-500 text-white'
+                            : 'border-zinc-700 bg-zinc-900'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3.5 h-3.5" />}
+                      </div>
                     </div>
                   </div>
                 );
