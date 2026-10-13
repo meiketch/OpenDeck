@@ -31,7 +31,8 @@ Das gemeinsame Erstellen von Karten ist denkbar einfach:
    - *Alternativ:* Klicke auf **Datei** → **Teilen** → **Im Web veröffentlichen** → Format auf **Kommagetrennte Werte (.csv)** stellen und auf *Veröffentlichen* klicken.
 4. **Im Spiel aktivieren**:
    - In OpenDeck (Lobby oder Startseite) auf **Google Sheets** klicken.
-   - Den Link zur Tabelle einfügen, Namen vergeben (z.B. *„Mikes Insider-Deck“*) und auf **Tabelle testen & laden** klicken.
+   - Den normalen Freigabelink oder veröffentlichten CSV-Link einfügen und **Link testen & laden** klicken, oder eine CSV-Datei vom Gerät auswählen.
+   - Namen vergeben (z.B. *„Mikes Insider-Deck“*), die Vorschau prüfen und **Deck speichern & aktivieren** klicken.
    - Das Deck wird sofort synchronisiert und für das Spiel aktiviert!
 
 ---

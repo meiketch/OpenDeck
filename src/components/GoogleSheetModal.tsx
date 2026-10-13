@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CardPack } from '../types/game.ts';
-import { fetchCardsFromGoogleSheet, saveCustomPack } from '../services/sheetsParser.ts';
+import { createCardPackFromCsv, fetchCardsFromGoogleSheet, saveCustomPack } from '../services/sheetsParser.ts';
 import { X, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 interface GoogleSheetModalProps {
@@ -40,6 +40,30 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
       setError(err instanceof Error ? err.message : 'Konnte Google Sheet nicht laden.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLocalFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    setError(null);
+    setPreview(null);
+    setIsLoading(true);
+    try {
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        throw new Error('Bitte wähle eine CSV-Datei aus.');
+      }
+
+      const csvText = await file.text();
+      const pack = createCardPackFromCsv(csvText, packName.trim() || 'Freunde-Deck', `der Datei „${file.name}“`);
+      setPreview(pack);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Konnte CSV-Datei nicht laden.');
+    } finally {
+      setIsLoading(false);
+      input.value = '';
     }
   };
 
@@ -84,7 +108,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
               <strong className="text-zinc-200">Spalte B:</strong> Weiße Karten (Witzige Antworten)
             </li>
             <li>
-              In Google Sheets: <strong className="text-zinc-200">Datei → Freigeben → Jeder mit Link darf ansehen</strong> oder <strong className="text-zinc-200">Im Web veröffentlichen → CSV</strong>.
+              In Google Sheets: <strong className="text-zinc-200">Datei → Freigeben → Jeder mit Link darf ansehen</strong> oder <strong className="text-zinc-200">Im Web veröffentlichen → CSV</strong>. Füge den normalen Freigabelink oder den veröffentlichten CSV-Link ein.
             </li>
           </ul>
         </div>
@@ -113,6 +137,19 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://docs.google.com/spreadsheets/d/..."
               className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
+              Oder CSV-Datei vom Gerät laden
+            </label>
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              onChange={handleLocalFileChange}
+              disabled={isLoading}
+              className="w-full text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:font-semibold file:text-zinc-100 hover:file:bg-zinc-700 disabled:opacity-50"
             />
           </div>
 
@@ -149,7 +186,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                     Lade Tabelle...
                   </>
                 ) : (
-                  <>Tabelle testen & laden</>
+                  <>Link testen & laden</>
                 )}
               </button>
             ) : (

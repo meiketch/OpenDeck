@@ -21,19 +21,39 @@ export function normalizeGoogleSheetUrl(url: string): string {
   const trimmed = url.trim();
   if (!trimmed) return '';
 
-  // Bereits eine direkte CSV-URL oder ein Publish-Link
-  if (trimmed.includes('pub?output=csv') || trimmed.endsWith('.csv')) {
+  if (trimmed.endsWith('.csv')) {
     return trimmed;
   }
 
-  // Regulärer Google Sheets Edit-Link:
-  // https://docs.google.com/spreadsheets/d/<ID>/edit#gid=<GID> oder /edit?usp=sharing
-  const match = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  const parsedUrl = new URL(trimmed);
+  if (parsedUrl.hostname !== 'docs.google.com') {
+    return trimmed;
+  }
+
+  // Veröffentlichte Links verwenden /d/e/<ID>/pub oder /pubhtml; output=csv
+  // kann dabei hinter anderen URL-Parametern stehen.
+  const publishedMatch = parsedUrl.pathname.match(
+    /^\/spreadsheets\/d\/e\/([a-zA-Z0-9-_]+)\/(?:pub|pubhtml)$/
+  );
+  if (publishedMatch) {
+    if (parsedUrl.searchParams.get('output') === 'csv' && parsedUrl.pathname.endsWith('/pub')) {
+      return trimmed;
+    }
+
+    parsedUrl.pathname = `/spreadsheets/d/e/${publishedMatch[1]}/pub`;
+    parsedUrl.searchParams.set('output', 'csv');
+    parsedUrl.hash = '';
+    return parsedUrl.toString();
+  }
+
+  // Normale Freigabe-/Bearbeitungslinks; gid kann im Query oder Hash stehen.
+  const match = parsedUrl.pathname.match(/^\/spreadsheets\/d\/([a-zA-Z0-9-_]+)(?:\/|$)/);
   if (match && match[1]) {
     const sheetId = match[1];
-    const gidMatch = trimmed.match(/gid=([0-9]+)/);
-    const gid = gidMatch ? gidMatch[1] : '0';
-    return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+    const gid = parsedUrl.searchParams.get('gid')
+      ?? new URLSearchParams(parsedUrl.hash.slice(1)).get('gid')
+      ?? '0';
+    return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${encodeURIComponent(gid)}`;
   }
 
   return trimmed;
@@ -158,6 +178,26 @@ export function parseCardsCsv(csvContent: string, packName: string = 'Freunde-Pa
   return { blackCards, whiteCards };
 }
 
+export function createCardPackFromCsv(
+  csvContent: string,
+  packName: string,
+  sourceName: string
+): CardPack {
+  const { blackCards, whiteCards } = parseCardsCsv(csvContent, packName);
+
+  if (blackCards.length === 0 && whiteCards.length === 0) {
+    throw new Error(`Keine gültigen Karten in ${sourceName} gefunden. Prüfe die Spalten und den CSV-Inhalt.`);
+  }
+
+  return {
+    id: `pack_csv_${Date.now()}`,
+    name: packName,
+    description: `Geladen aus ${sourceName} (${blackCards.length} Fragen, ${whiteCards.length} Antworten)`,
+    blackCards,
+    whiteCards,
+  };
+}
+
 /**
  * Lädt ein Google Sheet herunter und parst es.
  */
@@ -176,19 +216,7 @@ export async function fetchCardsFromGoogleSheet(
   }
 
   const csvText = await response.text();
-  const { blackCards, whiteCards } = parseCardsCsv(csvText, packName);
-
-  if (blackCards.length === 0 && whiteCards.length === 0) {
-    throw new Error('Keine gültigen Karten im Google Sheet gefunden. Prüfe die Spalten oder Freigabe.');
-  }
-
-  return {
-    id: `pack_sheet_${Date.now()}`,
-    name: packName,
-    description: `Geladen aus Google Sheets (${blackCards.length} Fragen, ${whiteCards.length} Antworten)`,
-    blackCards,
-    whiteCards,
-  };
+  return createCardPackFromCsv(csvText, packName, 'Google Sheet');
 }
 
 /**
