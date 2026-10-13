@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { PublicGameState, CardPack } from '../types/game.ts';
-import { GoogleSheetModal } from './GoogleSheetModal.tsx';
+import { CardPackImportModal } from './CardPackImportModal.tsx';
 import {
   Users,
   Copy,
@@ -43,7 +43,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [showQr, setShowQr] = useState(false);
-  const [showSheetModal, setShowSheetModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const players = Object.values(gameState.players);
   const connectedPlayers = players.filter((p) => p.connected);
@@ -199,11 +199,11 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               {isHost && (
                 <button
                   type="button"
-                  onClick={() => setShowSheetModal(true)}
+                  onClick={() => setShowImportModal(true)}
                   className="text-xs bg-rose-600/20 text-rose-400 border border-rose-500/30 hover:bg-rose-600 hover:text-white px-2.5 py-1.5 rounded-xl font-semibold flex items-center gap-1 transition cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  Google Sheet
+                  CSV importieren
                 </button>
               )}
             </div>
@@ -325,10 +325,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         )}
       </div>
 
-      {/* Google Sheet Modal */}
-      <GoogleSheetModal
-        isOpen={showSheetModal}
-        onClose={() => setShowSheetModal(false)}
+      <CardPackImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
         onPackAdded={onPackAdded}
       />
     </div>

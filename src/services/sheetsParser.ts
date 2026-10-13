@@ -15,51 +15,6 @@ export function calculatePickCount(text: string): number {
 }
 
 /**
- * Konvertiert eine Google Docs / Sheets URL in eine direkte CSV-Export-URL
- */
-export function normalizeGoogleSheetUrl(url: string): string {
-  const trimmed = url.trim();
-  if (!trimmed) return '';
-
-  if (trimmed.endsWith('.csv')) {
-    return trimmed;
-  }
-
-  const parsedUrl = new URL(trimmed);
-  if (parsedUrl.hostname !== 'docs.google.com') {
-    return trimmed;
-  }
-
-  // Veröffentlichte Links verwenden /d/e/<ID>/pub oder /pubhtml; output=csv
-  // kann dabei hinter anderen URL-Parametern stehen.
-  const publishedMatch = parsedUrl.pathname.match(
-    /^\/spreadsheets\/d\/e\/([a-zA-Z0-9-_]+)\/(?:pub|pubhtml)$/
-  );
-  if (publishedMatch) {
-    if (parsedUrl.searchParams.get('output') === 'csv' && parsedUrl.pathname.endsWith('/pub')) {
-      return trimmed;
-    }
-
-    parsedUrl.pathname = `/spreadsheets/d/e/${publishedMatch[1]}/pub`;
-    parsedUrl.searchParams.set('output', 'csv');
-    parsedUrl.hash = '';
-    return parsedUrl.toString();
-  }
-
-  // Normale Freigabe-/Bearbeitungslinks; gid kann im Query oder Hash stehen.
-  const match = parsedUrl.pathname.match(/^\/spreadsheets\/d\/([a-zA-Z0-9-_]+)(?:\/|$)/);
-  if (match && match[1]) {
-    const sheetId = match[1];
-    const gid = parsedUrl.searchParams.get('gid')
-      ?? new URLSearchParams(parsedUrl.hash.slice(1)).get('gid')
-      ?? '0';
-    return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${encodeURIComponent(gid)}`;
-  }
-
-  return trimmed;
-}
-
-/**
  * Parst CSV-Inhalte entweder aus:
  * 1) 2-Spalten-Modus (Spalte A = Schwarze Karten/Fragen, Spalte B = Weiße Karten/Antworten)
  * 2) Spalten mit Headern (Typ/Type, Text/Karte, Pack, Pick, Autor)
@@ -196,27 +151,6 @@ export function createCardPackFromCsv(
     blackCards,
     whiteCards,
   };
-}
-
-/**
- * Lädt ein Google Sheet herunter und parst es.
- */
-export async function fetchCardsFromGoogleSheet(
-  sheetUrl: string,
-  packName: string = 'Google Sheet Deck'
-): Promise<CardPack> {
-  const exportUrl = normalizeGoogleSheetUrl(sheetUrl);
-  if (!exportUrl) {
-    throw new Error('Ungültige Google Sheet URL');
-  }
-
-  const response = await fetch(exportUrl);
-  if (!response.ok) {
-    throw new Error(`Konnte Google Sheet nicht laden (${response.status}: ${response.statusText}). Prüfe, ob die Tabelle öffentlich bzw. im Web freigegeben ist.`);
-  }
-
-  const csvText = await response.text();
-  return createCardPackFromCsv(csvText, packName, 'Google Sheet');
 }
 
 /**

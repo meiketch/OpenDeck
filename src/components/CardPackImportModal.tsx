@@ -1,47 +1,25 @@
 import React, { useState } from 'react';
 import { CardPack } from '../types/game.ts';
-import { createCardPackFromCsv, fetchCardsFromGoogleSheet, saveCustomPack } from '../services/sheetsParser.ts';
+import { createCardPackFromCsv, saveCustomPack } from '../services/sheetsParser.ts';
 import { X, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
-interface GoogleSheetModalProps {
+interface CardPackImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPackAdded: (pack: CardPack) => void;
 }
 
-export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
+export const CardPackImportModal: React.FC<CardPackImportModalProps> = ({
   isOpen,
   onClose,
   onPackAdded,
 }) => {
-  const [url, setUrl] = useState('');
   const [packName, setPackName] = useState('Freunde-Deck');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<CardPack | null>(null);
 
   if (!isOpen) return null;
-
-  const handleTestAndLoad = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setPreview(null);
-
-    if (!url.trim()) {
-      setError('Bitte gib einen Google Sheet Link ein.');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const pack = await fetchCardsFromGoogleSheet(url, packName.trim() || 'Freunde-Deck');
-      setPreview(pack);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Konnte Google Sheet nicht laden.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleLocalFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.currentTarget;
@@ -90,15 +68,15 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
             <FileSpreadsheet className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Google Sheets Karten-Sync</h2>
-            <p className="text-sm text-zinc-400">Gemeinsam mit Freunden Karten anlegen</p>
+            <h2 className="text-xl font-bold text-white">CSV-Kartendeck importieren</h2>
+            <p className="text-sm text-zinc-400">Eigene Karten aus einer Datei hinzufügen</p>
           </div>
         </div>
 
         {/* Kurze Anleitung */}
         <div className="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-4 mb-5 text-xs text-zinc-300 space-y-2">
           <p className="font-semibold text-zinc-100 flex items-center gap-1.5">
-            💡 So legt ihr euer Google Sheet an:
+            💡 CSV-Format:
           </p>
           <ul className="list-disc list-inside space-y-1 text-zinc-400">
             <li>
@@ -108,12 +86,12 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
               <strong className="text-zinc-200">Spalte B:</strong> Weiße Karten (Witzige Antworten)
             </li>
             <li>
-              In Google Sheets: <strong className="text-zinc-200">Datei → Freigeben → Jeder mit Link darf ansehen</strong> oder <strong className="text-zinc-200">Im Web veröffentlichen → CSV</strong>. Füge den normalen Freigabelink oder den veröffentlichten CSV-Link ein.
+              Die CSV-Datei wird direkt im Browser gelesen und nicht auf einen Server hochgeladen.
             </li>
           </ul>
         </div>
 
-        <form onSubmit={handleTestAndLoad} className="space-y-4">
+        <div className="space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
               Name des Decks
@@ -129,20 +107,7 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
-              Google Sheet Link (URL)
-            </label>
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://docs.google.com/spreadsheets/d/..."
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
-              Oder CSV-Datei vom Gerät laden
+              CSV-Datei vom Gerät auswählen
             </label>
             <input
               type="file"
@@ -151,6 +116,12 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
               disabled={isLoading}
               className="w-full text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:font-semibold file:text-zinc-100 hover:file:bg-zinc-700 disabled:opacity-50"
             />
+            {isLoading && (
+              <p className="mt-2 flex items-center gap-2 text-xs text-zinc-400">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Lade CSV-Datei...
+              </p>
+            )}
           </div>
 
           {error && (
@@ -173,23 +144,8 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
             </div>
           )}
 
-          <div className="pt-2 flex gap-3">
-            {!preview ? (
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer shadow-lg shadow-rose-600/30"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Lade Tabelle...
-                  </>
-                ) : (
-                  <>Link testen & laden</>
-                )}
-              </button>
-            ) : (
+          {preview && (
+            <div className="pt-2">
               <button
                 type="button"
                 onClick={handleSaveAndUse}
@@ -198,9 +154,9 @@ export const GoogleSheetModal: React.FC<GoogleSheetModalProps> = ({
                 <CheckCircle2 className="w-5 h-5" />
                 Deck speichern & aktivieren
               </button>
-            )}
-          </div>
-        </form>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

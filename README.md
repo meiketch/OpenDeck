@@ -7,7 +7,7 @@
 ## ✨ Features
 
 - 💸 **0 € Serverkosten dauerhaft**: Läuft komplett als statische Web-App. Die Multiplayer-Synchronisation erfolgt per **Peer-to-Peer WebRTC DataChannels** (über `@trystero-p2p/mqtt` mit kostenlosen öffentlichen MQTT-Brokern für das Signaling).
-- 📊 **Gemeinsame Kartenpflege per Google Sheets**: Freunde können in einer geteilten Google-Tabelle live neue Fragen und Antworten eintragen. OpenDeck lädt das Deck mit einem Klick live per Link/CSV.
+- 📊 **Eigene Kartendecks importieren**: Lade Karten als CSV-Datei direkt von deinem Gerät.
 - 📱 **Mobile-First & Touch-optimiert**: Perfekt auf Smartphones spielbar (Karten tippen, wischen, responsive Ansicht).
 - 🎲 **Eingebautes Starterdeck**: 30 deutsche schwarze Fragen und 50 pointierte weiße Antworten sofort spielbereit.
 - 👑 **Vollständige Spielmechanik**:
@@ -18,22 +18,17 @@
 
 ---
 
-## 📝 Karten gemeinsam anlegen (Google Sheets Anleitung)
+## 📝 Eigene Karten importieren
 
-Das gemeinsame Erstellen von Karten ist denkbar einfach:
+Erstelle deine Karten in einer Tabellenkalkulation und exportiere sie als CSV:
 
-1. Erstelle eine neue Google-Tabelle auf [Google Sheets](https://sheets.new).
-2. Lege zwei Spalten an:
+1. Lege zwei Spalten an:
    - **Spalte A:** Schwarze Karten / Fragen. Verwende drei oder mehr Unterstriche (`___`) als Lücken, in die Antworten eingesetzt werden. Wenn eine Frage 2 Lücken enthält (z.B. *„Wenn alles schiefgeht, hilft nur noch ___ und ___.“*), verlangt das Spiel automatisch 2 weiße Karten von den Spielern!
    - **Spalte B:** Weiße Karten / Antworten (Pointen, Insider-Gags, absurde Begriffe).
-3. **Freigabe einrichten**:
-   - Klicke oben rechts auf **Freigeben** → Bei *Allgemeiner Zugriff* auf **„Jeder, der über den Link verfügt“** stellen (Rolle: *Betrachter*).
-   - *Alternativ:* Klicke auf **Datei** → **Teilen** → **Im Web veröffentlichen** → Format auf **Kommagetrennte Werte (.csv)** stellen und auf *Veröffentlichen* klicken.
-4. **Im Spiel aktivieren**:
-   - In OpenDeck (Lobby oder Startseite) auf **Google Sheets** klicken.
-   - Den normalen Freigabelink oder veröffentlichten CSV-Link einfügen und **Link testen & laden** klicken, oder eine CSV-Datei vom Gerät auswählen.
-   - Namen vergeben (z.B. *„Mikes Insider-Deck“*), die Vorschau prüfen und **Deck speichern & aktivieren** klicken.
-   - Das Deck wird sofort synchronisiert und für das Spiel aktiviert!
+2. Exportiere oder speichere die Tabelle als **CSV-Datei**.
+3. Klicke in OpenDeck auf **Eigenes Kartendeck per CSV importieren** oder in der Lobby auf **CSV importieren**.
+4. Vergib einen Namen, wähle die CSV-Datei von deinem Gerät aus und prüfe die Vorschau.
+5. Klicke auf **Deck speichern & aktivieren**.
 
 ---
 

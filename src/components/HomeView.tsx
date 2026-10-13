@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Play, LogIn, Sparkles, FileSpreadsheet, ShieldCheck, Heart } from 'lucide-react';
-import { GoogleSheetModal } from './GoogleSheetModal.tsx';
+import { CardPackImportModal } from './CardPackImportModal.tsx';
 import { CardPack } from '../types/game.ts';
 
 const AVATAR_COLORS = [
@@ -35,7 +35,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   });
   const [roomCode, setRoomCode] = useState(initialRoomCode);
   const [mode, setMode] = useState<'create' | 'join'>(initialRoomCode ? 'join' : 'create');
-  const [showSheetModal, setShowSheetModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -196,15 +196,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
           </form>
 
-          {/* Quick-Button: Google Sheet ansehen / importieren */}
+          {/* Quick-Button: CSV-Kartendeck importieren */}
           <div className="mt-6 pt-5 border-t border-zinc-800 flex justify-center">
             <button
               type="button"
-              onClick={() => setShowSheetModal(true)}
+              onClick={() => setShowImportModal(true)}
               className="text-xs text-zinc-400 hover:text-rose-400 font-semibold flex items-center gap-1.5 transition cursor-pointer"
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-              Google Sheets Anleitung & Deck-Import
+              Eigenes Kartendeck per CSV importieren
             </button>
           </div>
         </div>
@@ -221,10 +221,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </p>
       </footer>
 
-      {/* Google Sheet Modal */}
-      <GoogleSheetModal
-        isOpen={showSheetModal}
-        onClose={() => setShowSheetModal(false)}
+      <CardPackImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
         onPackAdded={onPackAdded}
       />
     </div>
